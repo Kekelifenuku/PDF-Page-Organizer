@@ -2,7 +2,7 @@ import SwiftUI
 import PDFKit
 import UniformTypeIdentifiers
 import Combine
-
+import RevenueCatUI
 // MARK: - Models
 
 struct PageItem: Identifiable, Equatable, Hashable {
@@ -620,7 +620,11 @@ struct MergerActionToolbar: View {
     @Binding var showDocumentPicker: Bool
     @Binding var showExportSheet: Bool
     @State private var showDeleteConfirmation = false
-    
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
+
+    @State private var showPaywall = false
+
+
     var body: some View {
         VStack(spacing: 0) {
             Divider()
@@ -695,10 +699,15 @@ struct MergerActionToolbar: View {
                     
                     // Export
                     Button {
-                        showExportSheet = true
+                        if subscriptionManager.isSubscribed {
+                            showExportSheet = true
+                        } else {
+                            showPaywall = true
+                        }
                     } label: {
                         Label("Export", systemImage: "square.and.arrow.up")
                     }
+
                     .disabled(viewModel.allPages.isEmpty)
                     .buttonStyle(ToolbarButtonStyle(
                         color: .green,
@@ -710,6 +719,9 @@ struct MergerActionToolbar: View {
                 .padding(.vertical, 10)
             }
             .background(Color(.systemBackground))
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
         .confirmationDialog(
             "Delete Selected Pages",
@@ -724,7 +736,7 @@ struct MergerActionToolbar: View {
             Text("This action cannot be undone.")
         }
     }
-}
+} 
 
 // MARK: - Main View
 
@@ -800,7 +812,6 @@ struct PDFMergerOrganizerView: View {
                         .transition(.opacity)
                 }
             }
-            .navigationTitle("PDF Merger")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -882,7 +893,7 @@ struct MergerEmptyStateView: View {
                         .symbolRenderingMode(.hierarchical)
                     
                     VStack(spacing: 6) {
-                        Text("PDF Merger & Organizer")
+                        Text("Page Merger & Organizer")
                             .font(.system(.title2, design: .rounded))
                             .fontWeight(.bold)
                             .foregroundColor(.primary)

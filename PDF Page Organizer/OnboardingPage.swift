@@ -21,7 +21,9 @@ struct OnboardingPage: Identifiable {
 // MARK: - Onboarding View
 
 struct OnboardingView: View {
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @AppStorage("hasCompletedOnboarding")
+    private var hasCompletedOnboarding = false
+
     @Environment(\.dismiss) var dismiss
     @State private var currentPage = 0
     
@@ -153,7 +155,7 @@ struct OnboardingView: View {
     }
     
     private func completeOnboarding() {
-        hasSeenOnboarding = true
+        hasCompletedOnboarding = true
         dismiss()
     }
 }
