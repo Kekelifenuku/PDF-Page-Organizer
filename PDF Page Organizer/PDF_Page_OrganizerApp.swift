@@ -162,7 +162,7 @@ final class SubscriptionManager: NSObject, ObservableObject {
     override init() {
         super.init()
 
-        Purchases.configure(withAPIKey: "appl_kFyweEOGhukTAHTjjXQCAIAUbIp")
+        Purchases.configure(withAPIKey: "appl_dCZzisIHyiFbLzGdLhrRsAiweUP")
         Purchases.shared.delegate = self
 
         checkSubscriptionStatus()
