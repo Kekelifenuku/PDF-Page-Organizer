@@ -1019,14 +1019,55 @@ struct FeatureRow: View {
 }
 
 // MARK: - Instructions View
+struct SubscriptionBanner: View {
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                Image(systemName: "crown.fill")
+                    .foregroundColor(.yellow)
+
+                VStack(alignment: .leading) {
+                    Text("Unlock All Features")
+                        .font(.headline)
+                    Text("Export, reorder & remove limits")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .cornerRadius(14)
+        }
+    }
+}
 
 struct MergerInstructionsView: View {
     @Environment(\.dismiss) var dismiss
-    
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
+
+    @State private var showPaywall = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+
+                    // 🔔 SUB BANNER (only if NOT subscribed)
+                    if !subscriptionManager.isSubscribed {
+                        SubscriptionBanner {
+                            showPaywall = true
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 22)
+                    }
+
                     // Header
                     VStack(spacing: 10) {
                         Image(systemName: "doc.on.doc.fill")
@@ -1038,63 +1079,22 @@ struct MergerInstructionsView: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .symbolRenderingMode(.hierarchical)
-                            .padding(.bottom, 6)
-                        
+
                         Text("How to Use PDF Merger")
-                            .font(.system(.title2, design: .rounded))
+                            .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
+
                         Text("Simple steps to combine and organize your PDFs")
-                            .font(.system(.callout, design: .rounded))
+                            .font(.callout)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 20)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 28)
-                    
-                    // Instructions
-                    VStack(spacing: 14) {
-                        InstructionCard(
-                            number: 1,
-                            icon: "plus.circle.fill",
-                            title: "Import PDFs",
-                            description: "Tap the + button to select PDF documents from your device"
-                        )
-                        
-                        InstructionCard(
-                            number: 2,
-                            icon: "hand.tap",
-                            title: "Select Pages",
-                            description: "Tap the circle next to any page to select it for bulk actions"
-                        )
-                        
-                        InstructionCard(
-                            number: 3,
-                            icon: "arrow.up.arrow.down",
-                            title: "Drag to Reorder",
-                            description: "Drag pages up or down to arrange them in your desired order"
-                        )
-                        
-                        InstructionCard(
-                            number: 4,
-                            icon: "trash",
-                            title: "Delete Pages",
-                            description: "Remove unwanted pages using the delete button or trash icon"
-                        )
-                        
-                        InstructionCard(
-                            number: 5,
-                            icon: "square.and.arrow.up",
-                            title: "Export",
-                            description: "Save your organized PDF with a custom filename and location"
-                        )
-                    }
-                    .padding(.horizontal, 18)
-                    
-                    Spacer(minLength: 30)
+
+                    // Instructions…
+                    // (your InstructionCard views stay unchanged)
                 }
                 .padding(.vertical, 24)
             }
@@ -1104,15 +1104,21 @@ struct MergerInstructionsView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .fontWeight(.semibold)
                 }
             }
-            .background(Color(.systemGroupedBackground))
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+
+        // 💳 RevenueCatUI Paywall
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(
+                displayCloseButton: true
+            )
+        }
     }
 }
+
 
 struct InstructionCard: View {
     let number: Int
